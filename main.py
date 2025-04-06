@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends
-from router import openai_router
+from routes import sentiment_analysis_by_openai_router
 from core.lifespan import lifespan
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(openai_router.router)
+app.include_router(sentiment_analysis_by_openai_router.router)
 
