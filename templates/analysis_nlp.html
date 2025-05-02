@@ -1,0 +1,152 @@
+<!-- templates/analysis_result.html -->
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>감정 분석 결과</title>
+        <style>
+            body {
+                font-family: "Noto Sans KR", sans-serif;
+                line-height: 1.6;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                color: #333;
+            }
+            .container {
+                background-color: #f9f9f9;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                color: #2c3e50;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .result-section {
+                margin-bottom: 40px;
+            }
+            .chart {
+                display: flex;
+                height: 40px;
+                border-radius: 5px;
+                overflow: hidden;
+                margin: 20px 0;
+            }
+            .chart-segment {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+            }
+            .positive {
+                background-color: #2ecc71;
+            }
+            .negative {
+                background-color: #e74c3c;
+            }
+            .neutral {
+                background-color: #3498db;
+            }
+            .negative-examples {
+                background-color: #fff;
+                border-left: 4px solid #e74c3c;
+                padding: 10px 15px;
+                margin-top: 20px;
+            }
+            .negative-examples h3 {
+                color: #e74c3c;
+                margin-top: 0;
+            }
+            .example-item {
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+            }
+            .example-item:last-child {
+                border-bottom: none;
+            }
+            .summary {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 15px;
+            }
+            .summary-item {
+                text-align: center;
+                flex: 1;
+            }
+            .summary-item .value {
+                font-size: 24px;
+                font-weight: bold;
+            }
+            .summary-item .label {
+                font-size: 14px;
+                color: #7f8c8d;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>텍스트 감정 분석 결과</h1>
+
+            <div class="result-section">
+                <h2>감정 분포</h2>
+
+                <div class="chart">
+                    <div
+                        class="chart-segment positive"
+                        style="width: {{ data.positive_ratio * 100 }}%;"
+                    >
+                        {{ '%0.1f'|format(data.positive_ratio * 100) }}%
+                    </div>
+                    <div
+                        class="chart-segment negative"
+                        style="width: {{ data.negative_ratio * 100 }}%;"
+                    >
+                        {{ '%0.1f'|format(data.negative_ratio * 100) }}%
+                    </div>
+                    <div
+                        class="chart-segment neutral"
+                        style="width: {{ data.neutral_ratio * 100 }}%;"
+                    >
+                        {{ '%0.1f'|format(data.neutral_ratio * 100) }}%
+                    </div>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-item">
+                        <div class="value">
+                            {{ '%0.1f'|format(data.positive_ratio * 100) }}%
+                        </div>
+
+                        <div class="label">긍정적</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="value">
+                            {{ '%0.1f'|format(data.negative_ratio * 100) }}%
+                        </div>
+
+                        <div class="label">부정적</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="value">
+                            {{ '%0.1f'|format(data.neutral_ratio * 100) }}%
+                        </div>
+                        <div class="label">중립적</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if data.negative_sentence %}
+            <div class="negative-examples">
+                <h3>검출된 부정적 문장</h3>
+                {% for sentence in data.negative_sentence %}
+                <div class="example-item">{{ sentence }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </body>
+</html>

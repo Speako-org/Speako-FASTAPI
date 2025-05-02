@@ -1,40 +1,23 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 import asyncio
 
-from services.db_service import get_pending_audio_path
-from services.s3_service import upload_text_to_s3, convert_to_s3_uri
+from schemas.stt_schema import TranscribeReqDTO
 from services.transcribe_service import transcribe_audio_and_save_text
-#from utils.spring_api import send_txt_url_to_spring
 
 router = APIRouter(
-    prefix = "/stt",
+    prefix = "/transcribe",
     tags = ["STT"]
 )
 
-@router.post("/run-all")
-async def transcribe_audio():
-    records = get_pending_audio_path()
+@router.post("/start")
+async def start_stt(request: TranscribeReqDTO, background_tasks: BackgroundTasks):
+    try: 
+        background_tasks.add_task(
+            transcribe_audio_and_save_text,
+            request.transcriptionId,
+            request.recordS3Path
+        )
+        return {"message": "STT 작업이 시작되었습니다."}
     
-    async def process_record(record):
-        try:
-            s3_uri = convert_to_s3_uri(record['s3_path'])
-            print(s3_uri)
-            txt_url = await transcribe_audio_and_save_text(s3_uri)
-            
-            return {
-                "record_id" : record['record_id'],
-                "status": "success",
-                "txt_url": txt_url
-                
-            }
-        except Exception as e:
-            return {
-                "record_id" : record['record_id'],
-                "status": "fail",
-                "error" : str(e)
-            }
-            
-    tasks = [process_record(record) for record in records]
-    results = await asyncio.gather(*tasks)
-    
-    return {"results": results}
+    except Exception as e:
+        return {"message" : "STT 작업 시작 중 오류가 발생했습니다", "error" : str(e)}
