@@ -1,0 +1,17 @@
+TestData/
+*.pt
+*.log
+*.ipynb
+*.db
+*.sqlite3
+__pycache__/
+venv/
+.git/
+*.pyc
+*.pyo
+*.pyd
+/build/
+dist/
+.env
+.env.*
+*.md
