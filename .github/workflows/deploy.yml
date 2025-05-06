@@ -55,6 +55,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull ${{ env.IMAGE_NAME }}:latest
-            docker stop speako || true && docker rm speako || true
-            docker run -d --name speako --env-file .env -p 8000:8000 ${{ env.IMAGE_NAME }}:latest
+            sudo docker pull ${{ env.IMAGE_NAME }}:latest
+            sudo docker stop speako || true && docker rm speako || true
+            sudo docker run -d --name speako --env-file .env -p 8000:8000 ${{ env.IMAGE_NAME }}:latest
