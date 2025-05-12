@@ -3,10 +3,11 @@ import torch
 
 from utils.nlpUtils import load_device, load_model, load_tokenizer
 from utils.textUtils import get_text, preprocess_text
+from schemas.nlp_response import NlpResponse
 
 
 
-def analysis(model_path='nlp_model/3class.pt'):
+async def analysis(model_path='nlp_model/3class.pt'):
     print("감정 분석을 시작합니다.")
     
     device = load_device()
@@ -43,12 +44,14 @@ def analysis(model_path='nlp_model/3class.pt'):
     else:
         negative_sentence = most_negative_sentence
     
-    return {
-        'positive_ratio': positive_ratio,
-        'negative_ratio': negative_ratio,
-        'neutral_ratio': neutral_ratio,
-        'negative_sentence': negative_sentence
-    }
+    
+    
+    return NlpResponse(
+        positive_ratio=positive_ratio,
+        negative_ratio=negative_ratio,
+        neutral_ratio=neutral_ratio,
+        negative_sentence=negative_sentence
+        )
 
 
 def predict_text(text, model, tokenizer, device):
