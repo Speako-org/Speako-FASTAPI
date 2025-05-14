@@ -3,9 +3,9 @@ import logging
 from services.nlpAnalysisService import analysis
 from utils.spring_api import send_result_to_spring
 
-async def sentiment_analysis():
+async def sentiment_analysis(transcriptionId: int):
     
-    result = await analysis()
+    result = await analysis(transcriptionId)
     
     if result:
         await send_result_to_spring(result)

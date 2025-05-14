@@ -3,7 +3,7 @@ import httpx
 import logging
 
 from dotenv import load_dotenv
-from schemas.nlp_response import NlpResponse
+from schemas.nlp_scheme import NlpResponseDto
 
 load_dotenv()
 
@@ -20,9 +20,8 @@ async def send_txt_url_to_spring(transcriptionId: int, transcriptionS3Path: str)
         response.raise_for_status()
         return response.json()
 
-async def send_result_to_spring(response: NlpResponse):
-  base_url = os.getenv("SPRING_URL")
-  post_url = f"{base_url}/something"  
+async def send_result_to_spring(response: NlpResponseDto):
+  post_url = os.getenv("SPRING_POST_NLP_URL")
 
   payload = response.model_dump()  
 
