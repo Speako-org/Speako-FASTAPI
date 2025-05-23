@@ -5,10 +5,10 @@ import logging
 from utils.nlpUtils import load_device, load_model, load_tokenizer
 from utils.textUtils import get_text, preprocess_text
 from schemas.nlp_scheme import NlpResult, NlpResponseDto
+from services.s3_service import convert_to_url, get_text_from_s3
 
 
-
-async def analysis(transcriptionId : int):
+async def analysis(transcriptionId: int, transcriptionS3Path: str):
     model_path='nlp_model/3class.pt'
     
     try:
@@ -17,8 +17,10 @@ async def analysis(transcriptionId : int):
         device = load_device()
         tokenizer = load_tokenizer()
         model = load_model(model_path, device)
-        
-        texts = get_text()
+
+        s3_url = convert_to_url(transcriptionS3Path)
+        raw_text = await get_text_from_s3(s3_url)
+        texts = get_text(raw_text)
         
         results = {'positive': 0, 'negative': 0 ,'neutral': 0}
         most_negative_sentence = []
@@ -56,12 +58,12 @@ async def analysis(transcriptionId : int):
             )
     except Exception as e:
         logging.error(f"감정 분석 중 오류 발생: {str(e)}")
-        return None
+        return 
     
     
     return NlpResponseDto(
         data=nlpResponse,
-        transcription_id=transcriptionId
+        transcriptionId=transcriptionId
     )
 
 

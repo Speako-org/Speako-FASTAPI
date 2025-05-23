@@ -30,6 +30,7 @@ async def send_result_to_spring(response: NlpResponseDto):
       http_response = await client.post(post_url, json=payload)
       http_response.raise_for_status()
       return http_response.json()
+    
   except httpx.RequestError as e:
     logging.error(f"[Spring 전송 실패] 연결 문제: {e}")
     return {"error": "Spring 서버와 연결할 수 없습니다."}
