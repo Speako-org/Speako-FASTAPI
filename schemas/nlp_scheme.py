@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field
 from typing import List, Literal
 
 class NlpReqDTO(BaseModel) :
-    transcriptionId: int
-    recordS3Path: str
+  transcriptionId: int
+  transcriptionS3Path: str
 
 class NlpResult(BaseModel):
   positive_ratio: float
@@ -12,6 +12,6 @@ class NlpResult(BaseModel):
   negative_sentence: List[str]
   
 class NlpResponseDto(BaseModel):
-  transcription_id: int
+  transcriptionId: int
   data: NlpResult
 
