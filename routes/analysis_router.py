@@ -13,7 +13,7 @@ async def run_test_analysis(request: NlpReqDTO, background_tasks: BackgroundTask
     background_tasks.add_task(
       sentiment_analysis,
       request.transcriptionId,
-      request.transcriptionS3Path
+      request.s3_path
     )
     return JSONResponse(
       status_code=status.HTTP_200_OK,
