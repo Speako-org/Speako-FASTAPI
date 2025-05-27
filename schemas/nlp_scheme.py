@@ -3,7 +3,7 @@ from typing import List, Literal
 
 class NlpReqDTO(BaseModel) :
   transcriptionId: int
-  transcriptionS3Path: str
+  s3_path: str
 
 class NlpResult(BaseModel):
   positive_ratio: float
@@ -12,6 +12,6 @@ class NlpResult(BaseModel):
   negative_sentence: List[str]
   
 class NlpResponseDto(BaseModel):
-  transcriptionId: int
+  transcription_id: int
   data: NlpResult
 
