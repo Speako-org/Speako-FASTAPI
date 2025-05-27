@@ -63,7 +63,7 @@ async def analysis(transcriptionId: int, s3_path: str):
     
     return NlpResponseDto(
         data=nlpResponse,
-        transcriptionId=transcriptionId
+        transcription_id=transcriptionId
     )
 
 
