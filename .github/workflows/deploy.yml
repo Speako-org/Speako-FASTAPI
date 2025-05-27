@@ -55,5 +55,5 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo docker pull ${{ env.IMAGE_NAME }}:latest
-            sudo docker stop speako || true && docker rm speako || true
-            sudo docker run -d --name speako --env-file .env -p 8000:8000 ${{ env.IMAGE_NAME }}:latest
+            sudo docker stop speako || true && sudo docker rm speako || true
+            sudo docker run -d --env-file /home/ubuntu/.env -v /home/ubuntu/.env:/code/.env -v /home/ubuntu/nlp_model:/code/nlp_model --name speako -p 8000:8000 ${{ env.IMAGE_NAME }}:latest
