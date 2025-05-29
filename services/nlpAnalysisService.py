@@ -7,12 +7,19 @@ from utils.textUtils import get_text, preprocess_text
 from schemas.nlp_scheme import NlpResult, NlpResponseDto
 from services.s3_service import convert_to_url, get_text_from_s3
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, 
+    format='[%(levelname)s] %(asctime)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 async def analysis(transcriptionId: int, s3_path: str):
     model_path='nlp_model/3class.pt'
     
     try:
-        print("감정 분석을 시작합니다.")
+        logging.info("감정 분석을 시작합니다.")
         
         device = load_device()
         tokenizer = load_tokenizer()
@@ -26,15 +33,15 @@ async def analysis(transcriptionId: int, s3_path: str):
         most_negative_sentence = []
         
         for text in texts:
-            print(text)
             predict = predict_text(text, model, tokenizer, device)
             
-            print("감정 분석 결과:")
-            print(f"텍스트: {text}")
-            print(f"예측된 감정: {predict['sentiment']}")
-            print(f"공격성 점수: {predict['aggressive_score']:.4f}")
+            logging.info(
+                f"[감정 분석 결과] 텍스트: {text} | "
+                f"예측: {predict['sentiment']} | "
+                f"공격성 점수: {predict['aggressive_score']:.4f}"
+            )
             
-            if predict['aggressive_score'] >= 0.9 and len(text) <= 20:
+            if predict['aggressive_score'] >= 0.9 :
                 most_negative_sentence.append(text)
             
             
@@ -94,7 +101,7 @@ def predict_text(text, model, tokenizer, device):
     sentiment_classes = ['positive', 'negative', 'neutral']
     
     sentiment_idx = predicted.item()
-    print(f"sentiment_idx: {sentiment_idx}")
+    logging.debug(f"sentiment_idx: {sentiment_idx}")
     sentiment = sentiment_classes[sentiment_idx]
     aggressive_score = probabilities[0][1].item()
     
