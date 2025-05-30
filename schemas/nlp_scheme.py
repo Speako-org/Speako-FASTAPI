@@ -3,7 +3,7 @@ from typing import List, Literal
 
 class NlpReqDTO(BaseModel) :
   transcriptionId: int
-  s3_path: str
+  transcriptionS3Path: str
 
 class NlpResult(BaseModel):
   positive_ratio: float
