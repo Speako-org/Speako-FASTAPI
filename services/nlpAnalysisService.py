@@ -1,13 +1,12 @@
 import random
 import torch
 import logging
+import heapq 
 
 from utils.nlpUtils import load_device, load_model, load_tokenizer
 from utils.textUtils import get_text, preprocess_text
 from schemas.nlp_scheme import NlpResult, NlpResponseDto
 from services.s3_service import convert_to_url, get_text_from_s3
-
-import logging
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -41,21 +40,22 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
                 f"공격성 점수: {predict['aggressive_score']:.4f}"
             )
             
-            if predict['aggressive_score'] >= 0.9 :
-                most_negative_sentence.append(text)
-            
-            
             results[predict['sentiment']] += 1
-        
+            
+            score = predict['aggressive_score']
+            
+            if score >= 0.65 and predict['sentiment'] == 'negative':
+                if len(most_negative_sentence) < 3:
+                    heapq.heappush(most_negative_sentence, (score, text))
+                else:
+                    heapq.heappushpop(most_negative_sentence, (score, text))
+            
         total_sentence = sum(results.values(), 0)
         positive_ratio = round(results['positive'] / total_sentence, 3)  
         negative_ratio = round(results['negative'] / total_sentence, 3)
         neutral_ratio = round(results['neutral'] / total_sentence, 3)
         
-        if len(most_negative_sentence) > 2:
-            negative_sentence = random.sample(most_negative_sentence, 3)
-        else:
-            negative_sentence = most_negative_sentence
+        negative_sentence = [text for _, text in sorted(most_negative_sentence, reverse=True)]
         
         nlpResponse = NlpResult(
                 positive_ratio=positive_ratio,
