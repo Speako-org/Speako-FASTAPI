@@ -1,5 +1,3 @@
-import torch
-
 from transformers import AutoTokenizer
 import torch
 from nlp_model.kobert import KobertSentimentClassifier
