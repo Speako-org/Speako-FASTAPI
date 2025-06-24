@@ -7,9 +7,8 @@ from services.sentiment_feedback import feedback_analysis
 async def sentiment_analysis(transcriptionId: int, transcriptionS3Path: str):
     
     result = await analysis(transcriptionId, transcriptionS3Path)
-    feedback = await feedback_analysis(result, transcriptionId, transcriptionS3Path)
-    
-    print(feedback)
+    # feedback = await feedback_analysis(result, transcriptionId, transcriptionS3Path)
+    # print(feedback)
     
     if result:
         await send_result_to_spring(result)
