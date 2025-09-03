@@ -5,7 +5,7 @@ on:
     branches: [ main ] 
     
 env:
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/speako:latest
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/speako
 
 jobs:
   build:
@@ -33,7 +33,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image
+      - name: Build and Push Docker image (no cache)
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -47,21 +47,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Create .env file for IMAGE_NAME
-        run: echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" > image.env
-
-      - name: Copy docker-compose.yml and image.env to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.yml,image.env"
-          target: "/home/ubuntu"
-
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@master
         with:
@@ -69,8 +54,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu
-            export $(cat image.env | xargs)
-            sudo docker-compose --env-file image.env pull
-            sudo docker-compose --env-file image.env down
-            sudo docker-compose --env-file image.env up -d
+            sudo docker pull ${{ env.IMAGE_NAME }}:latest
+            sudo docker stop speako || true && sudo docker rm speako || true
+            sudo docker run -d --env-file /home/ubuntu/.env -v /home/ubuntu/.env:/code/.env -v /home/ubuntu/nlp_model:/code/nlp_model --name speako -p 8000:8000 ${{ env.IMAGE_NAME }}:latest
