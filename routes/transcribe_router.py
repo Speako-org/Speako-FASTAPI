@@ -1,5 +1,5 @@
-from fastapi import APIRouter, BackgroundTasks
-import asyncio
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
+import os
 
 from schemas.stt_schema import TranscribeReqDTO
 from services.transcribe_service import transcribe_audio_and_save_text
@@ -9,8 +9,18 @@ router = APIRouter(
     tags = ["STT"]
 )
 
+INTERNAL_SECRET = os.getenv("INTERNAL_SECRET")
+
 @router.post("/start")
-async def start_stt(request: TranscribeReqDTO, background_tasks: BackgroundTasks):
+async def start_stt(
+    request: TranscribeReqDTO, 
+    background_tasks: BackgroundTasks,
+    authorization: str = Header(None)
+):
+    
+    if authorization != f"Bearer {INTERNAL_SECRET}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
     try: 
         background_tasks.add_task(
             transcribe_audio_and_save_text,
