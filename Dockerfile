@@ -13,6 +13,5 @@ COPY schemas/ schemas/
 COPY services/ services/
 COPY utils/ utils/
 COPY templates/ templates/
-COPY nlp_model/ nlp_model/
 
 ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
