@@ -5,7 +5,7 @@ on:
     branches: [ main ] 
     
 env:
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/speako:latest
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/speako
 
 jobs:
   build:
