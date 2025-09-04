@@ -37,7 +37,7 @@ async def send_result_to_spring(response: NlpResponseDto):
 
   try:
     async with httpx.AsyncClient() as client:
-      http_response = await client.post(post_url, hearders=headers, json=payload)
+      http_response = await client.post(post_url, headers=headers, json=payload)
       http_response.raise_for_status()
       return http_response.json()
     
