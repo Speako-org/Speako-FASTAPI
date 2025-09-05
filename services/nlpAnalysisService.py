@@ -7,6 +7,7 @@ from utils.nlpUtils import load_device, load_model, load_tokenizer
 from utils.textUtils import get_text, preprocess_text
 from schemas.nlp_scheme import NlpResult, NlpResponseDto
 from services.s3_service import convert_to_url, get_text_from_s3
+from utils.textUtils import get_speaker_text_only
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -25,8 +26,11 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
         model = load_model(model_path, device)
 
         s3_url = convert_to_url(transcriptionS3Path)
-        raw_text = await get_text_from_s3(s3_url)
-        texts = get_text(raw_text)
+        raw_json = await get_text_from_s3(s3_url)
+        
+        filtered_text = await get_speaker_text_only(raw_json, target_speaker="spk_0")
+        
+        texts = get_text(filtered_text)
         
         results = {'positive': 0, 'negative': 0 ,'neutral': 0}
         most_negative_sentence = []

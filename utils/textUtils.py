@@ -1,4 +1,5 @@
 import re
+import json
 from langchain_community.document_loaders import TextLoader
 
 def get_text(raw_text: str)-> list[str]:
@@ -14,3 +15,19 @@ def preprocess_text(text):
     text = text.strip()
     
     return text
+
+
+async def get_speaker_text_only(raw_json: str, target_speaker="spk_0"):
+    data = json.loads(raw_json)
+    results = data.get("results", {})
+    segments = results.get("audio_segments", [])
+
+    texts = []
+    
+    for seg in segments:
+        if seg.get("speaker_label") == target_speaker:
+            transcript = seg.get("transcript", "").strip()
+            if transcript:
+                texts.append(transcript)
+                
+    return " ".join(texts)
