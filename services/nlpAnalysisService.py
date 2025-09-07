@@ -63,8 +63,7 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
             positive_ratio=positive_ratio,
             negative_ratio=negative_ratio,
             neutral_ratio=neutral_ratio,
-            negative_sentence=negative_sentence,
-            feedBack=""
+            negative_sentence=negative_sentence
         )
         
         # GPT 피드백 분석 수행
