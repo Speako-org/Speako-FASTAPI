@@ -7,7 +7,7 @@ from utils.nlpUtils import load_device, load_model, load_tokenizer
 from utils.textUtils import get_text, preprocess_text
 from schemas.nlp_scheme import NlpResult, NlpResponseDto
 from services.s3_service import convert_to_url, get_text_from_s3
-from utils.textUtils import get_speaker_text_only
+from services.sentiment_feedback import feedback_analysis
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -26,11 +26,8 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
         model = load_model(model_path, device)
 
         s3_url = convert_to_url(transcriptionS3Path)
-        raw_json = await get_text_from_s3(s3_url)
-        
-        filtered_text = await get_speaker_text_only(raw_json, target_speaker="spk_0")
-        
-        texts = get_text(filtered_text)
+        raw_text = await get_text_from_s3(s3_url)
+        texts = get_text(raw_text)
         
         results = {'positive': 0, 'negative': 0 ,'neutral': 0}
         most_negative_sentence = []
@@ -55,18 +52,40 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
                     heapq.heappushpop(most_negative_sentence, (score, text))
             
         total_sentence = sum(results.values(), 0)
-        positive_ratio = round(results['positive'] / total_sentence, 3)  
+        positive_ratio = round(results['positive'] / total_sentence, 3)
         negative_ratio = round(results['negative'] / total_sentence, 3)
         neutral_ratio = round(results['neutral'] / total_sentence, 3)
         
         negative_sentence = [text for _, text in sorted(most_negative_sentence, reverse=True)]
         
+        # 초기 NlpResult 생성 (피드백 없이)
+        temp_nlp_result = NlpResult(
+            positive_ratio=positive_ratio,
+            negative_ratio=negative_ratio,
+            neutral_ratio=neutral_ratio,
+            negative_sentence=negative_sentence,
+            feedBack=""
+        )
+        
+        # GPT 피드백 분석 수행
+        logging.info("GPT 피드백 분석을 시작합니다.")
+        feedback_result = await feedback_analysis(temp_nlp_result, transcriptionId, transcriptionS3Path)
+        
+        feedback_text = ""
+        if feedback_result:
+            feedback_text = feedback_result.feedBack if hasattr(feedback_result, 'feedBack') else str(feedback_result)
+            logging.info(f"GPT 피드백 분석 완료: {feedback_text}")
+        else:
+            logging.warning("GPT 피드백 분석 실패 - 빈 피드백으로 진행")
+        
+        # 최종 NlpResult 생성 (피드백 포함)
         nlpResponse = NlpResult(
-                positive_ratio=positive_ratio,
-                negative_ratio=negative_ratio,
-                neutral_ratio=neutral_ratio,
-                negative_sentence=negative_sentence
-            )
+            positive_ratio=positive_ratio,
+            negative_ratio=negative_ratio,
+            neutral_ratio=neutral_ratio,
+            negative_sentence=negative_sentence,
+            feedBack=feedback_text
+        )
     except Exception as e:
         logging.error(f"감정 분석 중 오류 발생: {str(e)}")
         return 
