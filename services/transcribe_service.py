@@ -7,6 +7,7 @@ import logging
 
 from services.s3_service import upload_text_to_s3
 from utils.spring_api import send_txt_url_to_spring
+from utils.textUtils import get_speaker_text_only
 
 from dotenv import load_dotenv
 
@@ -65,17 +66,17 @@ async def transcribe_audio_and_save_text(transcriptionId: int, recordS3Path: str
         async with httpx.AsyncClient() as client:
             try : 
                 response = await client.get(transcript_url)
-                text = response.json()['results']['transcripts'][0]['transcript']
-                logging.info(f"[{job_name}] Transcribe 완료")
+                raw_json = response.text
+                text = await get_speaker_text_only(raw_json, target_speaker="spk_0")
+                logging.info(f"[{job_name}] spk_0 텍스트 추출 완료")
                 
             except Exception as e:
                 logging.error(f"[{job_name}] Transcribe 결과 가져오기 오류: {str(e)}")
                 raise Exception(f"Transcribe 결과 가져오기 오류: {str(e)}")
         
         txt_key = RESULT_TEXT_PREFIX + job_name + ".txt"
-        bucket = S3_BUCKET_NAME
         
-        result = upload_text_to_s3(bucket, txt_key, text)
+        result = upload_text_to_s3(S3_BUCKET_NAME, txt_key, text)
         
         if result:
             await send_txt_url_to_spring(transcriptionId, txt_key)
