@@ -70,10 +70,11 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
         logging.info("GPT 피드백 분석을 시작합니다.")
         feedback_result = await feedback_analysis(temp_nlp_result, transcriptionId, transcriptionS3Path)
         
-        feedback_text = ""
-        if feedback_result:
-            feedback_text = feedback_result.feedBack if hasattr(feedback_result, 'feedBack') else str(feedback_result)
-            logging.info(f"GPT 피드백 분석 완료: {feedback_text}")
+        feedback_list = []
+        
+        if feedback_result and hasattr(feedback_result, 'feedBack'):
+            feedback_list = [f.strip() for f in feedback_result.feedBack.split("- ") if f.strip()]
+            logging.info(f"GPT 피드백 분석 완료: {feedback_list}")
         else:
             logging.warning("GPT 피드백 분석 실패 - 빈 피드백으로 진행")
         
@@ -83,7 +84,7 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
             negative_ratio=negative_ratio,
             neutral_ratio=neutral_ratio,
             negative_sentence=negative_sentence,
-            feedBack=feedback_text
+            feedBack=feedback_list
         )
     except Exception as e:
         logging.error(f"감정 분석 중 오류 발생: {str(e)}")
