@@ -66,17 +66,21 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
             negative_sentence=negative_sentence
         )
         
-        # GPT 피드백 분석 수행
-        logging.info("GPT 피드백 분석을 시작합니다.")
-        feedback_result = await feedback_analysis(temp_nlp_result, transcriptionId, transcriptionS3Path)
-        
         feedback_list = []
+        if negative_sentence:
+            # GPT 피드백 분석 수행
+            logging.info("GPT 피드백 분석을 시작합니다.")
+            feedback_result = await feedback_analysis(temp_nlp_result, transcriptionId, transcriptionS3Path)
         
-        if feedback_result and hasattr(feedback_result, 'feedBack'):
-            feedback_list = [f.strip() for f in feedback_result.feedBack.split("- ") if f.strip()]
-            logging.info(f"GPT 피드백 분석 완료: {feedback_list}")
+            if feedback_result and hasattr(feedback_result, 'feedBack'):
+                feedback_list = [f.strip() for f in feedback_result.feedBack.split("- ") if f.strip()]
+                logging.info(f"GPT 피드백 분석 완료: {feedback_list}")
+
+            else:
+                logging.warning("GPT 피드백 분석 실패 - 빈 피드백으로 진행")
+            
         else:
-            logging.warning("GPT 피드백 분석 실패 - 빈 피드백으로 진행")
+            logging.info("부정 문장 없음 - GPT 피드백 분석 생략, 빈 피드백으로 진행")
         
         # 최종 NlpResult 생성 (피드백 포함)
         nlpResponse = NlpResult(
