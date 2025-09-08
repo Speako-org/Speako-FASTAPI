@@ -10,7 +10,7 @@ class NlpResult(BaseModel):
   negative_ratio: float
   neutral_ratio: float
   negative_sentence: List[str]
-  feedBack: str = Field(default="")
+  feedBack: List[str] = Field(default_factory=list)
   
 class NlpResponseDto(BaseModel):
   transcription_id: int
