@@ -29,10 +29,21 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
         raw_text = await get_text_from_s3(s3_url)
         texts = get_text(raw_text)
         
+        # 텍스트가 없는 경우 처리
+        if not texts or len(texts) == 0:
+            logging.warning("S3에서 가져온 텍스트가 비어있습니다.")
+            return None
+        
+        logging.info(f"처리할 문장 개수: {len(texts)}")
+        
         results = {'positive': 0, 'negative': 0 ,'neutral': 0}
         most_negative_sentence = []
         
         for text in texts:
+            # 빈 텍스트 건너뛰기
+            if not text or not text.strip():
+                logging.debug("빈 텍스트 건너뜀")
+                continue
             predict = predict_text(text, model, tokenizer, device)
             
             logging.info(
@@ -52,9 +63,17 @@ async def analysis(transcriptionId: int, transcriptionS3Path: str):
                     heapq.heappushpop(most_negative_sentence, (score, text))
             
         total_sentence = sum(results.values(), 0)
-        positive_ratio = round(results['positive'] / total_sentence, 3)
-        negative_ratio = round(results['negative'] / total_sentence, 3)
-        neutral_ratio = round(results['neutral'] / total_sentence, 3)
+        
+        # division by zero 오류 방지
+        if total_sentence == 0:
+            logging.warning("처리된 문장이 없습니다. 기본값으로 설정합니다.")
+            positive_ratio = 0.0
+            negative_ratio = 0.0
+            neutral_ratio = 0.0
+        else:
+            positive_ratio = round(results['positive'] / total_sentence, 3)
+            negative_ratio = round(results['negative'] / total_sentence, 3)
+            neutral_ratio = round(results['neutral'] / total_sentence, 3)
         
         negative_sentence = [text for _, text in sorted(most_negative_sentence, reverse=True)]
         

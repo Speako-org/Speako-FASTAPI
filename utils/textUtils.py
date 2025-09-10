@@ -3,9 +3,13 @@ import json
 from langchain_community.document_loaders import TextLoader
 
 def get_text(raw_text: str)-> list[str]:
+    # 빈 텍스트 처리
+    if not raw_text or not raw_text.strip():
+        return []
+    
     sentences = re.split(r'(?<=[.!?])\s+', raw_text.strip())
 
-    filtered_docs = [s.strip() for s in sentences if s.strip()]
+    filtered_docs = [s.strip() for s in sentences if s.strip() and len(s.strip()) > 1]
     
     return filtered_docs 
 
