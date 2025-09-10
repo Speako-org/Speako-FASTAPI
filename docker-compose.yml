@@ -9,6 +9,5 @@ services:
     env_file:
       - /home/ubuntu/.env
     volumes:
-      - /home/ubuntu/.env:/code/.env
       - /home/ubuntu/nlp_model:/code/nlp_model
     restart: always
